@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PathoTrace Hospital Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/vis-network/styles/vis-network.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1>PathoTrace</h1>
+          <p>Hospital Safety Console</p>
+        </div>
+
+        <nav class="nav-menu">
+          <button class="nav-link active" data-section="dashboard-section">Dashboard</button>
+          <button class="nav-link" data-section="patient-section">Add Patient</button>
+          <button class="nav-link" data-section="staff-section">Add Staff</button>
+          <button class="nav-link" data-section="visit-section">QR Visit Scan</button>
+          <button class="nav-link" data-section="high-risk-section">High Risk Monitor</button>
+          <button class="nav-link" data-section="ward-section">Ward Infection Panel</button>
+          <button class="nav-link" data-section="network-section">Network Graph</button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <span id="last-updated">Last updated: --</span>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="top-bar">
+          <div>
+            <h2>Hospital Operations Dashboard</h2>
+            <p>Live monitoring of patients, staff exposure, and contact risk.</p>
+          </div>
+          <div class="top-bar-actions">
+            <button id="refresh-btn" class="btn btn-primary" type="button">Refresh Data</button>
+            <button
+              id="voice-toggle-btn"
+              class="btn btn-secondary voice-toggle-btn"
+              type="button"
+              aria-pressed="false"
+              aria-label="Toggle voice control"
+            >
+              <span class="voice-mic-icon" aria-hidden="true">MIC</span>
+              Voice Control
+            </button>
+            <span id="voice-listening-pill" class="voice-listening-pill hidden" aria-live="polite">
+              Listening...
+            </span>
+            <span id="voice-status-text" class="voice-status-text" aria-live="polite"></span>
+          </div>
+        </header>
+
+        <section id="dashboard-section" class="view-section active">
+          <div class="section-header">
+            <h3>Dashboard KPIs</h3>
+          </div>
+          <div class="kpi-grid">
+            <article class="kpi-card">
+              <h4>Total Patients</h4>
+              <p id="kpi-patients">0</p>
+            </article>
+            <article class="kpi-card">
+              <h4>Total Staff</h4>
+              <p id="kpi-staff">0</p>
+            </article>
+            <article class="kpi-card">
+              <h4>High Risk Patients</h4>
+              <p id="kpi-high-risk-patient">0</p>
+            </article>
+            <article class="kpi-card">
+              <h4>High Risk Staff</h4>
+              <p id="kpi-high-risk-staff">0</p>
+            </article>
+          </div>
+          <div class="card called-person-card">
+            <h4>Auto-Called Serious Patients</h4>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Ward</th>
+                  <th>Alert Type</th>
+                  <th>Severity</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody id="called-person-table-body">
+                <tr>
+                  <td colspan="5">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="called-person-message" class="inline-message"></div>
+          </div>
+          <div id="dashboard-message" class="inline-message"></div>
+        </section>
+
+        <section id="patient-section" class="view-section">
+          <div class="section-header">
+            <h3>Add Patient</h3>
+          </div>
+          <form id="patient-form" class="form-card">
+            <div class="form-grid">
+              <label>
+                Patient ID
+                <input type="text" name="patientId" required />
+              </label>
+              <label>
+                Name
+                <input type="text" name="name" required />
+              </label>
+              <label>
+                Age
+                <input type="number" name="age" min="0" required />
+              </label>
+              <label>
+                Gender
+                <input type="text" name="gender" required />
+              </label>
+              <label>
+                Phone Number
+                <input type="text" name="phoneNumber" placeholder="+919876543210" />
+              </label>
+              <label>
+                Ward
+                <input type="text" name="ward" required />
+              </label>
+              <label>
+                Bed
+                <input type="text" name="bed" required />
+              </label>
+              <label>
+                Pathogen
+                <input type="text" name="pathogen" />
+              </label>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Patient</button>
+            <div id="patient-form-message" class="inline-message"></div>
+          </form>
+        </section>
+
+        <section id="staff-section" class="view-section">
+          <div class="section-header">
+            <h3>Add Staff</h3>
+          </div>
+          <form id="staff-form" class="form-card">
+            <div class="form-grid">
+              <label>
+                Name
+                <input type="text" name="name" required />
+              </label>
+              <label>
+                Role
+                <input type="text" name="role" required />
+              </label>
+              <label>
+                Phone Number
+                <input type="text" name="phoneNumber" placeholder="+919876543210" />
+              </label>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Staff</button>
+            <div id="staff-form-message" class="inline-message"></div>
+          </form>
+        </section>
+
+        <section id="visit-section" class="view-section">
+          <div class="section-header">
+            <h3>QR Visit Entry / Exit</h3>
+          </div>
+          <div class="visit-layout">
+            <div class="card">
+              <h4>Scanner</h4>
+              <div id="qr-reader"></div>
+              <div class="button-row">
+                <button id="start-scan-btn" class="btn btn-primary" type="button">
+                  Start Scanner
+                </button>
+                <button id="stop-scan-btn" class="btn btn-secondary" type="button" disabled>
+                  Stop Scanner
+                </button>
+                <button id="clear-scan-btn" class="btn btn-secondary" type="button">
+                  Clear Scan
+                </button>
+              </div>
+            </div>
+            <div class="card">
+              <h4>Visit Session</h4>
+              <div class="detail-row">
+                <span>Scanned Staff:</span>
+                <strong id="scan-staff">--</strong>
+              </div>
+              <div class="detail-row">
+                <span>Scanned Ward:</span>
+                <strong id="scan-ward">--</strong>
+              </div>
+              <div class="detail-row">
+                <span>Active Visit:</span>
+                <strong id="active-visit">None</strong>
+              </div>
+              <button id="exit-visit-btn" class="btn btn-danger" type="button" disabled>
+                Exit Current Visit
+              </button>
+              <div id="visit-message" class="inline-message"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="high-risk-section" class="view-section">
+          <div class="section-header">
+            <h3>High Risk Monitor</h3>
+          </div>
+          <div class="card">
+            <div class="high-risk-toolbar">
+              <input
+                id="high-risk-search-input"
+                class="high-risk-search-input"
+                type="search"
+                placeholder="Search by name"
+                aria-label="Search high risk records"
+              />
+              <select id="high-risk-type-filter" class="high-risk-filter-select" aria-label="Filter by type">
+                <option value="all">All Types</option>
+                <option value="staff">Staff</option>
+                <option value="patient">Patient</option>
+              </select>
+              <select id="high-risk-level-filter" class="high-risk-filter-select" aria-label="Filter by risk level">
+                <option value="all">All Levels</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+              <button id="high-risk-filter-clear" class="btn btn-secondary" type="button">
+                Clear
+              </button>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Risk Score</th>
+                  <th>Risk Level</th>
+                </tr>
+              </thead>
+              <tbody id="high-risk-table-body">
+                <tr>
+                  <td colspan="4">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="high-risk-message" class="inline-message"></div>
+          </div>
+        </section>
+
+        <section id="ward-section" class="view-section">
+          <div class="section-header">
+            <h3>Ward Infection Rate Panel</h3>
+          </div>
+          <div class="card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ward</th>
+                  <th>Total Patients</th>
+                  <th>Infected Count</th>
+                  <th>Infection %</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="ward-table-body">
+                <tr>
+                  <td colspan="5">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="ward-message" class="inline-message"></div>
+          </div>
+        </section>
+
+        <section id="network-section" class="view-section">
+          <div class="section-header">
+            <h3>Interaction Network</h3>
+          </div>
+          <div class="card">
+            <div class="network-toolbar">
+              <input
+                id="network-search-input"
+                class="search-input"
+                type="search"
+                placeholder="Search patient or staff name"
+                aria-label="Search network by patient or staff name"
+              />
+              <button id="network-search-clear" class="btn btn-secondary" type="button">
+                Clear
+              </button>
+            </div>
+            <div class="network-legend" aria-label="Graph legend">
+              <span><i class="legend-dot patient-dot"></i> Patient (Circle)</span>
+              <span><i class="legend-dot staff-dot"></i> Staff (Square)</span>
+              <span><i class="legend-line"></i> Interaction</span>
+            </div>
+            <div id="network-graph"></div>
+            <div id="network-message" class="inline-message"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
